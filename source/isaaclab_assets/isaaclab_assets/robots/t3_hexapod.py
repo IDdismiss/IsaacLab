@@ -54,7 +54,7 @@ T3_DC_MOTOR_CFG = DCMotorCfg(
 ##
 
 # Path to USD file - use absolute path
-T3_USD_PATH = "/data/Robots/T3/t3.usd"
+T3_USD_PATH = "/home/d510/IsaacLab/source/isaaclab_assets/data/Robots/T3/t3.usd"
 
 
 T3_HEXAPOD_CFG = ArticulationCfg(
