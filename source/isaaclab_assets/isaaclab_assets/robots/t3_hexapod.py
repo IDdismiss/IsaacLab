@@ -50,17 +50,16 @@ T3_DC_MOTOR_CFG = DCMotorCfg(
 
 
 ##
-# Configuration - Articulation (using URDF)
+# Configuration - Articulation (using USD)
 ##
 
-# Path to URDF file - you need to convert this to USD first
-# Or use UrdfFileCfg to load directly from URDF
-T3_URDF_PATH = "source/isaaclab_assets/data/Robots/T3/t3.urdf"
+# Path to USD file - place your converted USD file here
+T3_USD_PATH = "source/isaaclab_assets/data/Robots/T3/t3.usd"
 
 
 T3_HEXAPOD_CFG = ArticulationCfg(
-    spawn=sim_utils.UrdfFileCfg(
-        asset_path=T3_URDF_PATH,
+    spawn=sim_utils.UsdFileCfg(
+        usd_path=T3_USD_PATH,
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
@@ -76,9 +75,6 @@ T3_HEXAPOD_CFG = ArticulationCfg(
             solver_position_iteration_count=4,
             solver_velocity_iteration_count=0,
         ),
-        # URDF specific settings
-        fix_base=False,  # Floating base for locomotion
-        merge_fixed_joints=True,
     ),
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.15),  # Start position above ground
@@ -105,13 +101,13 @@ T3_HEXAPOD_CFG = ArticulationCfg(
     actuators={"legs": T3_SIMPLE_ACTUATOR_CFG},
     soft_joint_pos_limit_factor=0.95,
 )
-"""Configuration for T3 Hexapod robot using URDF file with implicit actuator."""
+"""Configuration for T3 Hexapod robot using USD file with implicit actuator."""
 
 
 # Alternative configuration using DC Motor model
 T3_HEXAPOD_DC_CFG = ArticulationCfg(
-    spawn=sim_utils.UrdfFileCfg(
-        asset_path=T3_URDF_PATH,
+    spawn=sim_utils.UsdFileCfg(
+        usd_path=T3_USD_PATH,
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
@@ -127,8 +123,6 @@ T3_HEXAPOD_DC_CFG = ArticulationCfg(
             solver_position_iteration_count=4,
             solver_velocity_iteration_count=0,
         ),
-        fix_base=False,
-        merge_fixed_joints=True,
     ),
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.15),
