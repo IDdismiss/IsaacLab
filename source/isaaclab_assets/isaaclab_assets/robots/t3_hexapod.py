@@ -53,8 +53,8 @@ T3_DC_MOTOR_CFG = DCMotorCfg(
 # Configuration - Articulation (using USD)
 ##
 
-# Path to USD file - place your converted USD file here
-T3_USD_PATH = "source/isaaclab_assets/data/Robots/T3/t3.usd"
+# Path to USD file - use absolute path
+T3_USD_PATH = "/data/Robots/T3/t3.usd"
 
 
 T3_HEXAPOD_CFG = ArticulationCfg(
