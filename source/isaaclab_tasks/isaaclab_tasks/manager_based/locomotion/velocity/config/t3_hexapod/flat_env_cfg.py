@@ -21,7 +21,6 @@ class T3HexapodFlatEnvCfg(T3HexapodRoughEnvCfg):
         # Override rewards for flat terrain
         self.rewards.flat_orientation_l2.weight = -5.0
         self.rewards.dof_torques_l2.weight = -2.5e-5
-        self.rewards.feet_air_time.weight = 0.5
 
         # Change terrain to flat plane
         self.scene.terrain.terrain_type = "plane"
