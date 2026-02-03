@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Configuration for T3 Hexapod locomotion on flat terrain."""
+"""Configuration for T3 Hexapod tripod gait locomotion on flat terrain."""
 
 from isaaclab.utils import configclass
 
@@ -12,15 +12,14 @@ from .rough_env_cfg import T3HexapodRoughEnvCfg
 
 @configclass
 class T3HexapodFlatEnvCfg(T3HexapodRoughEnvCfg):
-    """Configuration for T3 Hexapod on flat terrain."""
+    """Configuration for T3 Hexapod tripod gait on flat terrain."""
 
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
 
-        # Override rewards for flat terrain
-        self.rewards.flat_orientation_l2.weight = -5.0
-        self.rewards.dof_torques_l2.weight = -2.5e-5
+        # Increase orientation penalty for flat terrain
+        self.rewards.flat_orientation_l2.weight = -2.0
 
         # Change terrain to flat plane
         self.scene.terrain.terrain_type = "plane"

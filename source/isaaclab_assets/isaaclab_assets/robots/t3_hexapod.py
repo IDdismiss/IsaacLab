@@ -16,8 +16,12 @@ Leg naming convention:
 - RR: Rear Right
 
 Joint naming:
-- *_Leg_joint: Hip joint (connects body to upper leg)
-- *_Calf_joint: Knee joint (connects upper leg to lower leg)
+- *_Leg_joint: Hip joint (connects body to upper leg) - ACTIVE
+- *_Calf_joint: Knee joint (connects upper leg to lower leg) - FIXED
+
+Tripod Gait Groups:
+- Group A: FL, MR, RL (Front-Left, Middle-Right, Rear-Left)
+- Group B: FR, ML, RR (Front-Right, Middle-Left, Rear-Right)
 """
 
 import isaaclab.sim as sim_utils
@@ -28,14 +32,35 @@ from isaaclab.assets.articulation import ArticulationCfg
 # Configuration - Actuators
 ##
 
-T3_SIMPLE_ACTUATOR_CFG = ImplicitActuatorCfg(
+# 单电机版本：只控制 Leg_joint（6个电机）
+T3_SINGLE_MOTOR_ACTUATOR_CFG = ImplicitActuatorCfg(
+    joint_names_expr=[".*_Leg_joint"],  # 只控制 Leg 关节
+    effort_limit=20.0,
+    velocity_limit=10.0,
+    stiffness={".*_Leg_joint": 40.0},
+    damping={".*_Leg_joint": 2.0},
+)
+"""Configuration for T3 hexapod with single motor per leg (only Leg_joint)."""
+
+# Calf 关节固定器：高刚度保持固定角度
+T3_CALF_FIXED_CFG = ImplicitActuatorCfg(
+    joint_names_expr=[".*_Calf_joint"],  # Calf 关节
+    effort_limit=50.0,
+    velocity_limit=0.1,  # 低速度限制
+    stiffness={".*_Calf_joint": 200.0},  # 高刚度保持固定
+    damping={".*_Calf_joint": 20.0},  # 高阻尼防止振动
+)
+"""Configuration for fixed Calf joints with high stiffness."""
+
+# 双电机版本（原版）：控制所有关节
+T3_DUAL_MOTOR_ACTUATOR_CFG = ImplicitActuatorCfg(
     joint_names_expr=[".*_Leg_joint", ".*_Calf_joint"],
     effort_limit=20.0,
     velocity_limit=10.0,
     stiffness={".*_Leg_joint": 25.0, ".*_Calf_joint": 25.0},
     damping={".*_Leg_joint": 0.5, ".*_Calf_joint": 0.5},
 )
-"""Configuration for T3 hexapod with implicit actuator model."""
+"""Configuration for T3 hexapod with dual motors per leg."""
 
 
 T3_DC_MOTOR_CFG = DCMotorCfg(
@@ -57,10 +82,14 @@ T3_DC_MOTOR_CFG = DCMotorCfg(
 T3_USD_PATH = "/home/d510/IsaacLab/source/isaaclab_assets/data/Robots/T3/t3.usd"
 
 
+# ============================================================
+# 单电机版本 - 用于三角步态训练
+# 只有 Leg_joint 被控制，Calf_joint 固定
+# ============================================================
 T3_HEXAPOD_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         usd_path=T3_USD_PATH,
-        activate_contact_sensors=False,  # 先关闭，调试用
+        activate_contact_sensors=False,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             retain_accelerations=False,
@@ -77,38 +106,42 @@ T3_HEXAPOD_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.15),  # Start position above ground
+        pos=(0.0, 0.0, 0.12),  # 起始高度
         rot=(1.0, 0.0, 0.0, 0.0),  # Quaternion (w, x, y, z)
         joint_pos={
-            # Left side legs - leg joints
+            # Leg joints - 被控制的关节（初始角度 0）
             "FL_Leg_joint": 0.0,
             "ML_Leg_joint": 0.0,
             "RL_Leg_joint": 0.0,
-            # Right side legs - leg joints
             "FR_Leg_joint": 0.0,
             "MR_Leg_joint": 0.0,
             "RR_Leg_joint": 0.0,
-            # All calf joints (bent)
-            "FL_Calf_joint": -0.8,
-            "ML_Calf_joint": -0.8,
-            "RL_Calf_joint": -0.8,
-            "FR_Calf_joint": -0.8,
-            "MR_Calf_joint": -0.8,
-            "RR_Calf_joint": -0.8,
+            # Calf joints - 固定角度（弯曲以便着地）
+            "FL_Calf_joint": -1.2,
+            "ML_Calf_joint": -1.2,
+            "RL_Calf_joint": -1.2,
+            "FR_Calf_joint": -1.2,
+            "MR_Calf_joint": -1.2,
+            "RR_Calf_joint": -1.2,
         },
         joint_vel={".*": 0.0},
     ),
-    actuators={"legs": T3_SIMPLE_ACTUATOR_CFG},
+    actuators={
+        "legs": T3_SINGLE_MOTOR_ACTUATOR_CFG,  # 控制 Leg_joint
+        "calf_fixed": T3_CALF_FIXED_CFG,  # 固定 Calf_joint
+    },
     soft_joint_pos_limit_factor=0.95,
 )
-"""Configuration for T3 Hexapod robot using USD file with implicit actuator."""
+"""Configuration for T3 Hexapod with single motor per leg (tripod gait ready)."""
 
 
-# Alternative configuration using DC Motor model
-T3_HEXAPOD_DC_CFG = ArticulationCfg(
+# ============================================================
+# 双电机版本 - 完整控制
+# ============================================================
+T3_HEXAPOD_DUAL_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         usd_path=T3_USD_PATH,
-        activate_contact_sensors=False,  # 先关闭，调试用
+        activate_contact_sensors=False,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             retain_accelerations=False,
@@ -143,7 +176,11 @@ T3_HEXAPOD_DC_CFG = ArticulationCfg(
         },
         joint_vel={".*": 0.0},
     ),
-    actuators={"legs": T3_DC_MOTOR_CFG},
+    actuators={"legs": T3_DUAL_MOTOR_ACTUATOR_CFG},
     soft_joint_pos_limit_factor=0.95,
 )
-"""Configuration for T3 Hexapod robot with DC motor actuator model."""
+"""Configuration for T3 Hexapod with dual motors per leg (full control)."""
+
+
+# Legacy alias
+T3_HEXAPOD_DC_CFG = T3_HEXAPOD_DUAL_CFG
