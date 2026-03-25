@@ -54,3 +54,24 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:T3HexapodRoughPPORunnerCfg",
     },
 )
+
+# Wheel-paddle mode environments (velocity control, one-direction spinning)
+gym.register(
+    id="Isaac-Velocity-Flat-T3-Hexapod-Wheel-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.wheel_env_cfg:T3HexapodWheelEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:T3HexapodWheelPPORunnerCfg",
+    },
+)
+
+gym.register(
+    id="Isaac-Velocity-Flat-T3-Hexapod-Wheel-Play-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.wheel_env_cfg:T3HexapodWheelEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:T3HexapodWheelPPORunnerCfg",
+    },
+)

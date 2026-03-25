@@ -184,3 +184,66 @@ T3_HEXAPOD_DUAL_CFG = ArticulationCfg(
 
 # Legacy alias
 T3_HEXAPOD_DC_CFG = T3_HEXAPOD_DUAL_CFG
+
+
+# ============================================================
+# 轮桨模式 - 速度控制，所有 Leg_joint 朝同一方向持续旋转
+# stiffness=0：纯速度控制，damping 提供力矩
+# ============================================================
+T3_WHEEL_ACTUATOR_CFG = ImplicitActuatorCfg(
+    joint_names_expr=[".*_Leg_joint"],
+    effort_limit=20.0,
+    velocity_limit=15.0,  # 最大旋转速度 rad/s
+    stiffness={".*_Leg_joint": 0.0},   # 速度控制：刚度为 0
+    damping={".*_Leg_joint": 5.0},     # 阻尼提供驱动力矩
+)
+"""Configuration for T3 wheel-paddle actuator (velocity control, stiffness=0)."""
+
+
+T3_HEXAPOD_WHEEL_CFG = ArticulationCfg(
+    spawn=sim_utils.UsdFileCfg(
+        usd_path=T3_USD_PATH,
+        activate_contact_sensors=False,
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            disable_gravity=False,
+            retain_accelerations=False,
+            linear_damping=0.0,
+            angular_damping=0.0,
+            max_linear_velocity=1000.0,
+            max_angular_velocity=1000.0,
+            max_depenetration_velocity=1.0,
+        ),
+        articulation_props=sim_utils.ArticulationRootPropertiesCfg(
+            enabled_self_collisions=False,
+            solver_position_iteration_count=4,
+            solver_velocity_iteration_count=0,
+        ),
+    ),
+    init_state=ArticulationCfg.InitialStateCfg(
+        pos=(0.0, 0.0, 0.12),
+        rot=(1.0, 0.0, 0.0, 0.0),
+        joint_pos={
+            # Leg joints 初始角度 0
+            "FL_Leg_joint": 0.0,
+            "ML_Leg_joint": 0.0,
+            "RL_Leg_joint": 0.0,
+            "FR_Leg_joint": 0.0,
+            "MR_Leg_joint": 0.0,
+            "RR_Leg_joint": 0.0,
+            # Calf joints 固定弯曲
+            "FL_Calf_joint": -1.2,
+            "ML_Calf_joint": -1.2,
+            "RL_Calf_joint": -1.2,
+            "FR_Calf_joint": -1.2,
+            "MR_Calf_joint": -1.2,
+            "RR_Calf_joint": -1.2,
+        },
+        joint_vel={".*": 0.0},
+    ),
+    actuators={
+        "legs": T3_WHEEL_ACTUATOR_CFG,   # 速度控制 Leg_joint
+        "calf_fixed": T3_CALF_FIXED_CFG,  # 固定 Calf_joint
+    },
+    soft_joint_pos_limit_factor=0.95,
+)
+"""Configuration for T3 Hexapod in wheel-paddle mode (velocity control)."""

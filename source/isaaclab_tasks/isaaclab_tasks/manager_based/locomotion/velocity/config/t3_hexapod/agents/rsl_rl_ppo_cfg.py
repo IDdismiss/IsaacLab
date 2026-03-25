@@ -58,3 +58,24 @@ class T3HexapodFlatPPORunnerCfg(T3HexapodRoughPPORunnerCfg):
         # Smaller network for simpler flat terrain task
         self.policy.actor_hidden_dims = [128, 128, 64]
         self.policy.critic_hidden_dims = [128, 128, 64]
+
+
+@configclass
+class T3HexapodWheelPPORunnerCfg(T3HexapodRoughPPORunnerCfg):
+    """PPO runner configuration for T3 Hexapod wheel-paddle locomotion."""
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        self.max_iterations = 1500
+        self.experiment_name = "t3_hexapod_wheel_paddle"
+
+        # Higher entropy for exploration in velocity control space
+        self.algorithm.entropy_coef = 0.02
+
+        # Network size for wheel-paddle (similar to flat but slightly larger)
+        self.policy.actor_hidden_dims = [128, 128, 64]
+        self.policy.critic_hidden_dims = [128, 128, 64]
+
+        # Higher initial noise for velocity control exploration
+        self.policy.init_noise_std = 1.0
